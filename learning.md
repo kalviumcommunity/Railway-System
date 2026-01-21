@@ -44,6 +44,18 @@ A **Digital Traceability Platform** for Indian Railway Catering Services that tr
 - [ x] Continue React revision (hooks, state management, components)
 - [x ] Set up project structure
 
+### 👤 Developer: Harish
+
+| Date | Topics | Status |
+|------|--------|--------|
+| 20 Jan 2026 | TypeScript Fundamentals | ✅ Completed |
+| 21 Jan 2026 | TypeScript Fundamentals | 📖 In Progress |
+
+### Today's Goals (21 Jan 2026):
+- [ ] Continue TypeScript learning (types, interfaces, generics)
+- [ ] Practice TypeScript with sample projects
+- [ ] Review Node.js with TypeScript basics
+
 ---
 
 ## 🗂️ Project Structure (Planned)
