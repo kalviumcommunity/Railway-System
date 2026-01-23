@@ -36,9 +36,10 @@ A **Digital Traceability Platform** for Indian Railway Catering Services that tr
 |------|--------|--------|
 | 20 Jan 2026 | TypeScript Fundamentals | ✅ Completed |
 | 20 Jan 2026 | React.js Revision | ✅ Completed |
-| 21 Jan 2026 | TypeScript Fundamentals | 📖 In Progress |
-| 21 Jan 2026 | React.js Revision | 📖 In Progress |
-
+| 21 Jan 2026 | TypeScript Fundamentals | ✅ Completed |
+| 21 Jan 2026 | React.js Revision | ✅ Completed |
+| 22 Jan 2026 | TypeScript | 📖 In Progress |
+| 22 Jan 2026 | PostgreSQL | 📖 In Progress |
 
 
 ### 👤 Developer: Harish
