@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚂 Railway Food Service Management System
 
-## Getting Started
+A comprehensive food quality tracking system for Indian Railways with QR code-based complaint management.
 
-First, run the development server:
+## ✨ Features
+
+- 🔐 **Role-Based Access Control** (Admin, Kitchen Head, Pantry Staff)
+- 📱 **Mobile-First Design** - Works on all devices
+- 🎫 **QR Code Generation** - Scannable codes for food batches
+- 📝 **Public Complaint System** - No login required for passengers
+- 🍽️ **Batch Tracking** - Track food from kitchen to pantry
+- 📊 **Admin Dashboard** - Complete system overview
+- ⚡ **Real-time Updates** - Instant status tracking
+
+## 🚀 Quick Start with Docker
+
+**One command to run everything:**
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Default Login:**
+- Email: `admin@railway.com`
+- Password: `admin123`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📖 Documentation
 
-## Learn More
+- **[Complete Setup Guide](SETUP_GUIDE.md)** - Full installation instructions
+- **[Mobile Testing Guide](MOBILE_TESTING.md)** - Test on your phone
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Frontend**: Next.js 16, React, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Auth**: JWT tokens with bcrypt
+- **QR Codes**: qrcode.react
+- **Containerization**: Docker & Docker Compose
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 👥 User Roles
 
-## Deploy on Vercel
+### Admin
+- Full system access
+- User management
+- System statistics
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Kitchen Head
+- Create kitchens & batches
+- Generate QR codes
+- View complaints
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Pantry Staff
+- Receive batches
+- Track inventory
+
+### Passengers (Public)
+- Scan QR codes
+- Submit complaints
+- No login required!

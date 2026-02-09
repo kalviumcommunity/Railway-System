@@ -2,7 +2,8 @@
 
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
 
 interface Kitchen {
   id: string
@@ -15,6 +16,8 @@ interface Kitchen {
 interface Batch {
   id: string
   supplierName: string
+  foodItem: string
+  qrCode: string
   status: string
   createdAt: string
   expiresAt: string
@@ -29,7 +32,7 @@ interface Stats {
 }
 
 export default function KitchenDashboard() {
-  const { user, logout } = useAuth()
+  const { user, logout, token } = useAuth()
   const [activeTab, setActiveTab] = useState<'overview' | 'kitchens' | 'batches' | 'qr'>('overview')
   const [kitchens, setKitchens] = useState<Kitchen[]>([])
   const [batches, setBatches] = useState<Batch[]>([])
@@ -39,42 +42,53 @@ export default function KitchenDashboard() {
   // Modal states
   const [showKitchenModal, setShowKitchenModal] = useState(false)
   const [showBatchModal, setShowBatchModal] = useState(false)
+  const [showQRModal, setShowQRModal] = useState(false)
+  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null)
   const [newKitchenName, setNewKitchenName] = useState('')
   const [newBatch, setNewBatch] = useState({
     kitchenId: '',
     supplierName: '',
+    foodItem: '',
     expiresAt: ''
   })
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    if (!token) return
+    
     setLoading(true)
     try {
       // Load kitchens
-      const kitchensRes = await fetch('/api/admin/kitchens')
+      const kitchensRes = await fetch('/api/admin/kitchens', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      let kitchensData: Kitchen[] = []
       if (kitchensRes.ok) {
-        const kitchensData = await kitchensRes.json()
+        kitchensData = await kitchensRes.json()
         setKitchens(kitchensData)
       }
 
       // Load batches
-      const batchesRes = await fetch('/api/admin/batches')
+      const batchesRes = await fetch('/api/admin/batches', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      let batchesData: Batch[] = []
       if (batchesRes.ok) {
-        const batchesData = await batchesRes.json()
+        batchesData = await batchesRes.json()
         setBatches(batchesData)
       }
 
-      // Calculate stats
-      const activeKitchens = kitchens.filter(k => k.status === 'ACTIVE').length
-      const activeBatches = batches.filter(b => ['CREATED', 'DISPATCHED'].includes(b.status)).length
+      // Calculate stats from the newly loaded data
+      const activeKitchens = kitchensData.filter(k => k.status === 'ACTIVE').length
+      const activeBatches = batchesData.filter(b => ['CREATED', 'DISPATCHED'].includes(b.status)).length
       
       setStats({
-        totalKitchens: kitchens.length,
+        totalKitchens: kitchensData.length,
         activeKitchens: activeKitchens,
-        totalBatches: batches.length,
+        totalBatches: batchesData.length,
         activeBatches: activeBatches
       })
     } catch (error) {
@@ -82,7 +96,11 @@ export default function KitchenDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const createKitchen = async () => {
     if (!newKitchenName.trim()) return
@@ -90,7 +108,10 @@ export default function KitchenDashboard() {
     try {
       const res = await fetch('/api/admin/kitchens', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ name: newKitchenName })
       })
 
@@ -98,36 +119,50 @@ export default function KitchenDashboard() {
         setShowKitchenModal(false)
         setNewKitchenName('')
         loadData()
+        alert('Kitchen created successfully!')
       } else {
-        alert('Failed to create kitchen')
+        const errorData = await res.json()
+        alert(`Failed to create kitchen: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
-      alert('Error creating kitchen')
+      console.error('Error creating kitchen:', error)
+      alert('Error creating kitchen: Network error')
     }
   }
 
   const createBatch = async () => {
-    if (!newBatch.kitchenId || !newBatch.supplierName || !newBatch.expiresAt) {
+    if (!newBatch.kitchenId || !newBatch.supplierName || !newBatch.foodItem || !newBatch.expiresAt) {
       alert('Please fill all fields')
       return
     }
 
+    console.log('Creating batch with data:', newBatch)
+
     try {
       const res = await fetch('/api/admin/batches', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(newBatch)
       })
 
+      console.log('Response status:', res.status)
+
       if (res.ok) {
         setShowBatchModal(false)
-        setNewBatch({ kitchenId: '', supplierName: '', expiresAt: '' })
+        setNewBatch({ kitchenId: '', supplierName: '', foodItem: '', expiresAt: '' })
         loadData()
+        alert('Batch created successfully!')
       } else {
-        alert('Failed to create batch')
+        const errorData = await res.json()
+        console.error('Error response:', errorData)
+        alert(`Failed to create batch: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
-      alert('Error creating batch')
+      console.error('Error creating batch:', error)
+      alert('Error creating batch: Network error')
     }
   }
 
@@ -348,9 +383,10 @@ export default function KitchenDashboard() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Food Item</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kitchen</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">QR Code</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                       </tr>
@@ -360,6 +396,9 @@ export default function KitchenDashboard() {
                         <tr key={batch.id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="font-medium text-gray-900">{batch.supplierName}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {batch.foodItem}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {batch.kitchen.name}
@@ -374,15 +413,23 @@ export default function KitchenDashboard() {
                               {batch.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(batch.createdAt).toLocaleDateString()}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <code className="bg-gray-100 px-2 py-1 rounded text-xs">{batch.qrCode || 'N/A'}</code>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(batch.expiresAt).toLocaleDateString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <button className="text-blue-600 hover:text-blue-900 mr-3">Dispatch</button>
-                            <button className="text-gray-600 hover:text-gray-900">View</button>
+                            <button 
+                              onClick={() => {
+                                setSelectedBatch(batch)
+                                setShowQRModal(true)
+                              }}
+                              className="text-blue-600 hover:text-blue-900 mr-3"
+                            >
+                              View QR
+                            </button>
+                            <button className="text-gray-600 hover:text-gray-900">Details</button>
                           </td>
                         </tr>
                       ))}
@@ -516,6 +563,18 @@ export default function KitchenDashboard() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Food Item
+                  </label>
+                  <input
+                    type="text"
+                    value={newBatch.foodItem}
+                    onChange={(e) => setNewBatch({...newBatch, foodItem: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Enter food item name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Expiry Date
                   </label>
                   <input
@@ -535,11 +594,110 @@ export default function KitchenDashboard() {
                   <button
                     onClick={() => {
                       setShowBatchModal(false)
-                      setNewBatch({ kitchenId: '', supplierName: '', expiresAt: '' })
+                      setNewBatch({ kitchenId: '', supplierName: '', foodItem: '', expiresAt: '' })
                     }}
                     className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md font-medium"
                   >
                     Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* QR Code View Modal */}
+        {showQRModal && selectedBatch && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Batch QR Code</h3>
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Supplier</p>
+                      <p className="font-medium">{selectedBatch.supplierName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Food Item</p>
+                      <p className="font-medium">{selectedBatch.foodItem}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Kitchen</p>
+                      <p className="font-medium">{selectedBatch.kitchen.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Status</p>
+                      <p className="font-medium">{selectedBatch.status}</p>
+                    </div>
+                  </div>
+                  <div className="border-t pt-4">
+                    <p className="text-sm text-gray-500 mb-2">QR Code</p>
+                    <div className="bg-white p-6 rounded border-2 border-gray-300 flex flex-col items-center">
+                      <div id="qr-code-svg">
+                        <QRCodeSVG 
+                          value={`${window.location.origin}/complaint/${selectedBatch.qrCode}`}
+                          size={200}
+                          level="H"
+                          includeMargin={true}
+                        />
+                      </div>
+                      <div className="mt-4 font-mono text-sm text-gray-600 break-all text-center">
+                        {selectedBatch.qrCode}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-2">
+                        Scan this QR code to track or report issues
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 text-xs text-gray-500">
+                    <p><strong>Created:</strong> {new Date(selectedBatch.createdAt).toLocaleString()}</p>
+                    <p><strong>Expires:</strong> {new Date(selectedBatch.expiresAt).toLocaleString()}</p>
+                  </div>
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/complaint/${selectedBatch.qrCode}`)
+                      alert('Complaint link copied to clipboard!')
+                    }}
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
+                  >
+                    Copy Link
+                  </button>
+                  <button
+                    onClick={() => {
+                      const svg = document.getElementById('qr-code-svg')
+                      if (svg) {
+                        const svgData = new XMLSerializer().serializeToString(svg)
+                        const canvas = document.createElement('canvas')
+                        const ctx = canvas.getContext('2d')
+                        const img = new Image()
+                        img.onload = () => {
+                          canvas.width = img.width
+                          canvas.height = img.height
+                          ctx?.drawImage(img, 0, 0)
+                          const pngFile = canvas.toDataURL('image/png')
+                          const downloadLink = document.createElement('a')
+                          downloadLink.download = `QR-${selectedBatch.qrCode}.png`
+                          downloadLink.href = pngFile
+                          downloadLink.click()
+                        }
+                        img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
+                      }
+                    }}
+                    className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium"
+                  >
+                    Download QR
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowQRModal(false)
+                      setSelectedBatch(null)
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md font-medium"
+                  >
+                    Close
                   </button>
                 </div>
               </div>

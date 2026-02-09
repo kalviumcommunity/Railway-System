@@ -24,7 +24,7 @@ async function handler(_req: AuthenticatedRequest) {
       },
     })
 
-    return NextResponse.json({ kitchens })
+    return NextResponse.json(kitchens)
   } catch (error) {
     console.error('Error fetching kitchens:', error)
     return NextResponse.json(
@@ -53,7 +53,7 @@ async function createHandler(req: AuthenticatedRequest) {
       },
     })
 
-    return NextResponse.json({ kitchen }, { status: 201 })
+    return NextResponse.json(kitchen, { status: 201 })
   } catch (error) {
     console.error('Error creating kitchen:', error)
     return NextResponse.json(
@@ -63,5 +63,5 @@ async function createHandler(req: AuthenticatedRequest) {
   }
 }
 
-export const GET = withRole('ADMIN')(handler)
-export const POST = withRole('ADMIN')(createHandler)
+export const GET = withRole('ADMIN', 'KITCHEN')(handler)
+export const POST = withRole('ADMIN', 'KITCHEN')(createHandler)
