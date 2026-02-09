@@ -96,22 +96,22 @@ export default function AdminDashboard() {
 
       if (usersRes.ok) {
         const data = await usersRes.json()
-        setUsers(data.users)
+        setUsers(data.users || data)
       }
       
       if (kitchensRes.ok) {
         const data = await kitchensRes.json()
-        setKitchens(data.kitchens)
+        setKitchens(data.kitchens || data)
       }
       
       if (batchesRes.ok) {
         const data = await batchesRes.json()
-        setBatches(data.batches)
+        setBatches(Array.isArray(data) ? data : (data.batches || []))
       }
       
       if (complaintsRes.ok) {
         const data = await complaintsRes.json()
-        setComplaints(data.complaints)
+        setComplaints(data.complaints || data)
       }
       
       if (statsRes.ok) {
