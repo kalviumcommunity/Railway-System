@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { qrcode: string } }
+  { params }: { params: Promise<{ qrcode: string }> }
 ) {
   try {
-    const { qrcode } = params
+    const { qrcode } = await params
 
     if (!qrcode) {
       return NextResponse.json(

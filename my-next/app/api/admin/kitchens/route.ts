@@ -3,9 +3,13 @@ import { prisma } from '@/lib/prisma'
 import { withRole, AuthenticatedRequest } from '@/lib/auth-middleware'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function handler(_req: AuthenticatedRequest) {
+async function handler(req: AuthenticatedRequest) {
   try {
+    // Admin sees all kitchens, other roles only see active ones
+    const isAdmin = req.user?.role === 'ADMIN'
+    
     const kitchens = await prisma.kitchen.findMany({
+      where: isAdmin ? undefined : { status: 'ACTIVE' },
       include: {
         batches: {
           select: {

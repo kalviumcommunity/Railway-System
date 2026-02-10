@@ -28,7 +28,7 @@ interface Batch {
   status: string
   createdAt: string
   expiresAt: string
-  kitchen: { name: string }
+  kitchen: { name: string; status?: string }
   _count: { complaints: number }
 }
 
@@ -145,6 +145,31 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error updating kitchen:', error)
+    }
+  }
+
+  const toggleUserStatus = async (userId: string, currentActive: boolean) => {
+    try {
+      const newActive = !currentActive
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ active: newActive }),
+      })
+
+      if (response.ok) {
+        fetchAllData()
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to update user status')
+      }
+    } catch (error) {
+      console.error('Error updating user:', error)
+      alert('Error updating user status')
     }
   }
 
@@ -511,31 +536,43 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
-                        {batches.map((batch) => (
-                          <tr key={batch.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 text-sm font-mono text-gray-600">{batch.id.slice(0, 8)}...</td>
-                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{batch.kitchen.name}</td>
-                            <td className="px-6 py-4 text-sm text-gray-600">{batch.supplierName}</td>
-                            <td className="px-6 py-4 text-sm">
-                              <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(batch.status)}`}>
-                                {batch.status}
-                              </span>
-                            </td>
+                        {batches.map((batch) => {
+                          const isBlockedKitchen = batch.kitchen.status === 'BLOCKED'
+                          return (
+                            <tr key={batch.id} className={`hover:bg-gray-50 ${isBlockedKitchen ? 'bg-red-50/30' : ''}`}>
+                              <td className="px-6 py-4 text-sm font-mono text-gray-600">{batch.id.slice(0, 8)}...</td>
+                              <td className="px-6 py-4 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-900">{batch.kitchen.name}</span>
+                                  {isBlockedKitchen && (
+                                    <span className="px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 rounded">
+                                      BLOCKED
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-600">{batch.supplierName}</td>
+                              <td className="px-6 py-4 text-sm">
+                                <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(batch.status)}`}>
+                                  {batch.status}
+                                </span>
+                              </td>
                             <td className="px-6 py-4 text-sm">
                               <span className={`px-2 py-1 text-xs font-medium rounded ${
                                 batch._count.complaints > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'
                               }`}>
                                 {batch._count.complaints}
                               </span>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">
-                              {new Date(batch.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">
-                              {new Date(batch.expiresAt).toLocaleDateString()}
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-600">
+                                {new Date(batch.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-600">
+                                {new Date(batch.expiresAt).toLocaleDateString()}
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -608,6 +645,7 @@ export default function AdminDashboard() {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Role</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Status</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Created</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
@@ -629,6 +667,23 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-600">
                               {new Date(u.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 text-sm">
+                              {u.id !== user?.userId && (
+                                <button
+                                  onClick={() => toggleUserStatus(u.id, u.active)}
+                                  className={`px-3 py-1 text-xs border rounded hover:bg-gray-50 ${
+                                    u.active
+                                      ? 'border-red-300 text-red-700'
+                                      : 'border-green-300 text-green-700'
+                                  }`}
+                                >
+                                  {u.active ? 'Block' : 'Activate'}
+                                </button>
+                              )}
+                              {u.id === user?.userId && (
+                                <span className="text-xs text-gray-400 italic">You</span>
+                              )}
                             </td>
                           </tr>
                         ))}
