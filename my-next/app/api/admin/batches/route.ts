@@ -5,13 +5,22 @@ import { BatchStatus } from '@prisma/client'
 import { randomUUID } from 'crypto'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function handler(_req: AuthenticatedRequest) {
+async function handler(req: AuthenticatedRequest) {
   try {
+    // Admin sees all batches, other roles only see batches from active kitchens
+    const isAdmin = req.user?.role === 'ADMIN'
+    
     const batches = await prisma.batch.findMany({
+      where: isAdmin ? undefined : {
+        kitchen: {
+          status: 'ACTIVE'
+        }
+      },
       include: {
         kitchen: {
           select: {
             name: true,
+            status: true,
           },
         },
         _count: {

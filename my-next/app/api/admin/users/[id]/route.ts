@@ -30,23 +30,39 @@ export async function PATCH(
 
     const { id } = await params
     const body = await req.json()
-    const { status } = body
+    const { active } = body
 
-    if (!status || !['ACTIVE', 'BLOCKED'].includes(status)) {
+    if (typeof active !== 'boolean') {
       return NextResponse.json(
-        { error: 'Valid status is required (ACTIVE or BLOCKED)' },
+        { error: 'Valid active status is required (true or false)' },
         { status: 400 }
       )
     }
 
-    const kitchen = await prisma.kitchen.update({
+    // Prevent admin from deactivating themselves
+    if (id === user.userId && !active) {
+      return NextResponse.json(
+        { error: 'You cannot deactivate your own account' },
+        { status: 400 }
+      )
+    }
+
+    const updatedUser = await prisma.user.update({
       where: { id },
-      data: { status },
+      data: { active },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        active: true,
+        createdAt: true,
+      },
     })
 
-    return NextResponse.json({ kitchen })
+    return NextResponse.json({ user: updatedUser })
   } catch (error) {
-    console.error('Error updating kitchen:', error)
+    console.error('Error updating user:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
