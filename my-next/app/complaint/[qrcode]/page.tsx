@@ -193,7 +193,7 @@ export default function ComplaintPage() {
                 type="text"
                 value={formData.trainNo}
                 onChange={(e) => setFormData({...formData, trainNo: e.target.value})}
-                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border-2 border-gray-300 bg-white rounded-md px-4 py-2.5 text-gray-900 font-medium text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 placeholder="e.g., 12345"
                 required
               />
@@ -207,7 +207,7 @@ export default function ComplaintPage() {
                 type="text"
                 value={formData.passengerName}
                 onChange={(e) => setFormData({...formData, passengerName: e.target.value})}
-                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border-2 border-gray-300 bg-white rounded-md px-4 py-2.5 text-gray-900 font-medium text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 placeholder="Your name"
               />
             </div>
@@ -219,7 +219,7 @@ export default function ComplaintPage() {
               <textarea
                 value={formData.message}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
-                className="w-full border border-gray-300 rounded-md px-4 py-2 h-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border-2 border-gray-300 bg-white rounded-md px-4 py-2.5 h-32 text-gray-900 font-medium text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 placeholder="Please describe your complaint in detail..."
                 required
               />

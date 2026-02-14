@@ -443,7 +443,7 @@ export default function AdminDashboard() {
                         value={newKitchenName}
                         onChange={(e) => setNewKitchenName(e.target.value)}
                         placeholder="Enter kitchen name"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        className="flex-1 px-3 py-2.5 border-2 border-gray-300 bg-white rounded text-gray-900 font-medium text-base focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 shadow-sm"
                         onKeyPress={(e) => e.key === 'Enter' && createKitchen()}
                       />
                       <button

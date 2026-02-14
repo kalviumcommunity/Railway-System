@@ -459,7 +459,7 @@ export default function KitchenDashboard() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Select Batch
                       </label>
-                      <select className="w-full border border-gray-300 rounded-md px-3 py-2">
+                      <select className="w-full border-2 border-gray-300 bg-white rounded-md px-3 py-2.5 text-gray-900 font-medium text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm">
                         <option value="">Choose a batch...</option>
                         {batches.filter(b => b.status === 'CREATED').map(batch => (
                           <option key={batch.id} value={batch.id}>
@@ -502,7 +502,7 @@ export default function KitchenDashboard() {
                     type="text"
                     value={newKitchenName}
                     onChange={(e) => setNewKitchenName(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border-2 border-gray-300 bg-white rounded-md px-3 py-2.5 text-gray-900 font-medium text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                     placeholder="Enter kitchen name"
                   />
                 </div>
@@ -541,7 +541,7 @@ export default function KitchenDashboard() {
                   <select
                     value={newBatch.kitchenId}
                     onChange={(e) => setNewBatch({...newBatch, kitchenId: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border-2 border-gray-300 bg-white rounded-md px-3 py-2.5 text-gray-900 font-medium text-base focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm"
                   >
                     <option value="">Select kitchen...</option>
                     {kitchens.filter(k => k.status === 'ACTIVE').map(kitchen => (
@@ -557,7 +557,7 @@ export default function KitchenDashboard() {
                     type="text"
                     value={newBatch.supplierName}
                     onChange={(e) => setNewBatch({...newBatch, supplierName: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border-2 border-gray-300 bg-white rounded-md px-3 py-2.5 text-gray-900 font-medium text-base focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm"
                     placeholder="Enter supplier name"
                   />
                 </div>
@@ -569,7 +569,7 @@ export default function KitchenDashboard() {
                     type="text"
                     value={newBatch.foodItem}
                     onChange={(e) => setNewBatch({...newBatch, foodItem: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border-2 border-gray-300 bg-white rounded-md px-3 py-2.5 text-gray-900 font-medium text-base focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm"
                     placeholder="Enter food item name"
                   />
                 </div>
@@ -581,7 +581,7 @@ export default function KitchenDashboard() {
                     type="datetime-local"
                     value={newBatch.expiresAt}
                     onChange={(e) => setNewBatch({...newBatch, expiresAt: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    className="w-full border-2 border-gray-300 bg-white rounded-md px-3 py-2.5 text-gray-900 font-medium text-base focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm"
                   />
                 </div>
                 <div className="flex space-x-3">
